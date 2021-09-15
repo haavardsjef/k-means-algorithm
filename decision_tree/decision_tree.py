@@ -25,10 +25,10 @@ class DecisionTree:
         # TODO: Implement
 
         root = Node(None)
-        if (X['Play Tennis'] == 'Yes').all():
+        if (y == 'Yes').all():
             root.label = 'Yes'
             return root
-        elif (X['Play Tennis'] == 'No').all():
+        elif (y == 'No').all():
             root.label = 'No'
             return root
         elif X.empty:
@@ -41,10 +41,11 @@ class DecisionTree:
                 new_branch = Node(root, v_i)
                 root.addChild(new_branch)
                 X_vi = X.loc[X[A] == v_i]
+                y_vi = y.loc[X[A] == v_i]
                 if X_vi.empty:
                     new_branch.addChild(Node(new_branch, y.mode()[0]))
                 else:
-                    new_branch.addChild(self.fit(X_vi, y))
+                    new_branch.addChild(self.fit(X_vi, y_vi))
         # The first call will be the last to return, so this will be the top-level root
         self.tree = root
         return root
@@ -64,7 +65,10 @@ class DecisionTree:
             A length m vector with predictions
         """
         # TODO: Implement
+        predictions = []
         for index, row in X.iterrows():
+            predictions.append(self.predictSingle(row))
+        return predictions
 
         raise NotImplementedError()
 
@@ -74,7 +78,7 @@ class DecisionTree:
             for child in node.children:
                 if child.label == singleRow[node.decision_attribute]:
                     node = child
-                    break
+        return node.label
 
     def get_rules(self):
         """
@@ -99,7 +103,9 @@ class DecisionTree:
 
 
 def getBestAttribute(X, y) -> str:
-    raise NotImplementedError()
+    return X.columns[np.argmax([entropy(y.groupby(X[col]).count()) for col in X.columns])]
+
+    # raise NotImplementedError()
 
 
 class Node:
@@ -152,3 +158,16 @@ def entropy(counts):
     probs = counts / counts.sum()
     probs = probs[probs > 0]  # Avoid log(0)
     return - np.sum(probs * np.log2(probs))
+
+
+if __name__ == '__main__':
+    data_1 = pd.read_csv(
+        'C:/Users/Haavard/github/machine-learning/tdt4173-task-1/decision_tree/data_1.csv')
+    # Separate independent (X) and dependent (y) variables
+    X = data_1.drop(columns=['Play Tennis'])
+    y = data_1['Play Tennis']
+
+    # Create and fit a Decrision Tree classifier
+    model_1 = DecisionTree()  # <-- Should work with default constructor
+    model_1.fit(X, y)
+    model_1.predict(X)
