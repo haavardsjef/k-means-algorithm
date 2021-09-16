@@ -24,26 +24,30 @@ class DecisionTree:
         """
         # TODO: Implement
 
-        root = Node(None)
+        root = Node()
         if (y == 'Yes').all():
             root.label = 'Yes'
+            root.leaf = True
             return root
         elif (y == 'No').all():
             root.label = 'No'
+            root.leaf = True
             return root
         elif X.empty:
             root.label = y.mode()[0]  # Most common label
+            root.leaf = True
             return root
         else:
             A = getBestAttribute(X, y)
             root.decision_attribute = A
             for v_i in X[A].unique():  # For each possible value, vi, of A
-                new_branch = Node(root, v_i)
+                new_branch = Node(parent=root, label=v_i)
                 root.addChild(new_branch)
                 X_vi = X.loc[X[A] == v_i]
                 y_vi = y.loc[X[A] == v_i]
                 if X_vi.empty:
-                    new_branch.addChild(Node(new_branch, y.mode()[0]))
+                    new_branch.addChild(
+                        Node(parent=new_branch, label=y.mode()[0], leaf=True))
                 else:
                     new_branch.addChild(self.fit(X_vi, y_vi))
         # The first call will be the last to return, so this will be the top-level root
@@ -68,7 +72,7 @@ class DecisionTree:
         predictions = []
         for index, row in X.iterrows():
             predictions.append(self.predictSingle(row))
-        return predictions
+        return pd.Series(predictions)
 
         raise NotImplementedError()
 
@@ -76,8 +80,14 @@ class DecisionTree:
         node = self.tree
         while node.children:
             for child in node.children:
+                if child.leaf:
+                    return child.label
+                if child.decision_attribute is not None:
+                    node = child
+                    break
                 if child.label == singleRow[node.decision_attribute]:
                     node = child
+                    break
         return node.label
 
     def get_rules(self):
@@ -103,17 +113,21 @@ class DecisionTree:
 
 
 def getBestAttribute(X, y) -> str:
-    return X.columns[np.argmax([entropy(y.groupby(X[col]).count()) for col in X.columns])]
+    # TODO: Implement
+    attr = X.columns[np.argmax(
+        [entropy(y.groupby(X[col]).count()) for col in X.columns])]
+    return attr
 
     # raise NotImplementedError()
 
 
 class Node:
-    def __init__(self, parent=None, label=None):
+    def __init__(self, parent=None, label=None, leaf=False):
         self.parent = parent
         self.decision_attribute = None
         self.label = label  # Value of decision attribute of parent node
         self.children = []
+        self.leaf = leaf
         pass
 
     def addChild(self, child):
@@ -162,7 +176,7 @@ def entropy(counts):
 
 if __name__ == '__main__':
     data_1 = pd.read_csv(
-        'C:/Users/Haavard/github/machine-learning/tdt4173-task-1/decision_tree/data_1.csv')
+        'C:/Users/Håvard/Github/machine_learning/task-1/decision_tree/data_1.csv')
     # Separate independent (X) and dependent (y) variables
     X = data_1.drop(columns=['Play Tennis'])
     y = data_1['Play Tennis']
