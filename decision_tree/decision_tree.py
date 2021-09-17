@@ -121,7 +121,6 @@ class DecisionTree:
 
 
 def getBestAttribute(X, y) -> str:
-    # TODO: Implement
     attr = X.columns[0]
     max_gain = 0
     for col in X.columns:

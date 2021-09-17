@@ -112,7 +112,6 @@ class KMeans:
     def __init__(self, k=2):
         # NOTE: Feel free add any hyperparameters
         # (with defaults) as you see fit
-        # TODO: Should be randomized and take k as argument for size
         self.k = k
         self.centroids = None
         pass
@@ -182,7 +181,6 @@ class KMeans:
             there are 3 clusters, then a possible assignment
             could be: array([2, 0, 0, 1, 2, 1, 1, 0, 2, 2])
         """
-        # TODO: Implement
         cluster_assignments = np.full(X.shape[0], -1, int)
 
         for i, row in X.iterrows():
