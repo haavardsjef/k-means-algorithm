@@ -22,8 +22,6 @@ class DecisionTree:
                 to the features.
             y (pd.Series): a vector of discrete ground-truth labels
         """
-        # TODO: Implement
-
         root = Node()
         if (y == 'Yes').all():
             root.label = 'Yes'
@@ -68,13 +66,10 @@ class DecisionTree:
         Returns:
             A length m vector with predictions
         """
-        # TODO: Implement
         predictions = []
         for index, row in X.iterrows():
             predictions.append(self.predictSingle(row))
         return pd.Series(predictions)
-
-        raise NotImplementedError()
 
     def predictSingle(self, singleRow: pd.Series):
         node = self.tree
@@ -108,17 +103,44 @@ class DecisionTree:
             ...
         ]
         """
-        # TODO: Implement
-        raise NotImplementedError()
+        # Traverse the tree using a queue
+        rules = []
+        queue = [[self.tree, []]]  # Format is [node, pre-rule]
+        while queue:
+            node, rule = queue.pop(0)
+            if node.leaf:
+                rules.append((rule, node.label))
+            elif node.decision_attribute is not None:
+                for child in node.children:
+                    queue.append(
+                        [child, rule + [(node.decision_attribute, child.label)]])
+            else:
+                assert len(node.children) == 1
+                queue.append([node.children[0], rule])
+        return rules
 
 
 def getBestAttribute(X, y) -> str:
     # TODO: Implement
-    attr = X.columns[np.argmax(
-        [entropy(y.groupby(X[col]).count()) for col in X.columns])]
+    attr = X.columns[0]
+    max_gain = 0
+    for col in X.columns:
+        gain = informationGain(X=X, y=y, attribute=col)
+        if gain > max_gain:
+            max_gain = gain
+            attr = col
     return attr
 
-    # raise NotImplementedError()
+
+def informationGain(X, y, attribute):
+    entropy_s = entropy(y.value_counts())
+    sum_entropy = 0
+    for val in X[attribute].unique():
+        X_vi = X.loc[X[attribute] == val]
+        y_vi = y.loc[X[attribute] == val]
+        entropy_v = entropy(y_vi.value_counts())
+        sum_entropy += (len(X_vi) / len(X)) * entropy_v
+    return entropy_s - sum_entropy
 
 
 class Node:
@@ -172,16 +194,3 @@ def entropy(counts):
     probs = counts / counts.sum()
     probs = probs[probs > 0]  # Avoid log(0)
     return - np.sum(probs * np.log2(probs))
-
-
-if __name__ == '__main__':
-    data_1 = pd.read_csv(
-        'C:/Users/Håvard/Github/machine_learning/task-1/decision_tree/data_1.csv')
-    # Separate independent (X) and dependent (y) variables
-    X = data_1.drop(columns=['Play Tennis'])
-    y = data_1['Play Tennis']
-
-    # Create and fit a Decrision Tree classifier
-    model_1 = DecisionTree()  # <-- Should work with default constructor
-    model_1.fit(X, y)
-    model_1.predict(X)
