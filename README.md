@@ -11,7 +11,7 @@ In this assignment I will be developing two well-known and simple (but occasiona
 ## Decision tree
 
 
-### Overview
+## Overview
 - The <algorithm_name>.py files (e.g. k_means.py) contains the implementation of the algorithm.
 - For each algorithm, there are two datasets that has been used to test the algorithm. 
   - The data_1.csv files contain easy problems.
