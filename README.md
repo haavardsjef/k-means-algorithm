@@ -1,6 +1,6 @@
 # K-means algorithm
 
-This repository contains all resources for Homework 1 of TDT4173 fall 2021.
+This repository contains all resources for Homework 1 of TDT4173 fall 2021. A short writeup can be found in [report.pdf](report.pdf)
 
 ## Problem Description
 
